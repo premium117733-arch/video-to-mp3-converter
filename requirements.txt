@@ -1,0 +1,6 @@
+pyTelegramBotAPI>=4.18.0
+requests>=2.31.0
+urllib3>=2.0.0
+certifi>=2023.11.17
+imageio-ffmpeg
+Flask>=3.0.0
