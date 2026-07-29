@@ -32,7 +32,7 @@ keep_alive()
 # 🔑 2. Telegram Bot Setup
 # -------------------------------------------------------------
 # বটের টোকেন পরিবেশ পরিবর্তনশীল (Environment Variable) থেকে নেওয়া হবে
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8965509113:AAFHwWiszGO6cxPjSzxWwFAI5grIyQAi_TY")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8972390690:AAEQEJ87jZS0lxhUz1VfYRu9Wa_0yxZoNoc")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
