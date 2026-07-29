@@ -25,37 +25,35 @@ def keep_alive():
 keep_alive()
 
 # 🔑 2. Telegram Bot Setup
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8965509113:AAFBOg5gmBGO6bvmYaCUeqHbl5kW3pD05d4")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8965509113:AAFHwWiszGO6cxPjSzxWwFAI5grIyQAi_TY")
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # FFmpeg এর জন্য এক্সিকিউটেবল পাথ নেওয়া
 FFMPEG_EXE = ffmpeg_lib.get_ffmpeg_exe()
 
-# HTML ট্যাগ নিরাপদ রাখার ফাংশন
-def clean_html(text):
-    if not text:
-        return ""
-    return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+# সব মেসেজের নিচে থাকার ওয়াটারমার্ক/ফুটার
+FOOTER = "\n\n⭐ Developed by SAIFUL"
 
 # Start & Help Command
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    user_name = clean_html(message.from_user.first_name)
+    user_name = message.from_user.first_name
     welcome_text = (
-        f"👋 <b>স্বাগতম, {user_name}!</b> ✨\n\n"
-        "🎬 <b>Video to MP3 Converter Bot</b>-এ আপনাকে স্বাগতম! 🎵\n\n"
-        "📌 <b>কিভাবে ব্যবহার করবেন:</b>\n"
-        "━ আমাকে যেকোনো <b>Video</b> বা <b>Video Document</b> পাঠান। 📥\n"
-        "━ আমি মুহূর্তের মধ্যেই সেটিকে HD <b>MP3 Audio</b>-তে কনভার্ট করে দেব। ⚡\n\n"
-        "🚀 <b>শুরু করতে এখনই একটি ভিডিও পাঠান!</b> 🔥"
+        f"👋 স্বাগতম, {user_name}! ✨\n\n"
+        "🎬 Video to MP3 Converter Bot-এ আপনাকে স্বাগতম! 🎵\n\n"
+        "📌 কিভাবে ব্যবহার করবেন:\n"
+        "━ আমাকে যেকোনো Video বা Video Document পাঠান। 📥\n"
+        "━ আমি মুহূর্তের মধ্যেই সেটিকে HD MP3 Audio-তে কনভার্ট করে দেব। ⚡\n\n"
+        "🚀 শুরু করতে এখনই একটি ভিডিও পাঠান! 🔥"
+        f"{FOOTER}"
     )
-    bot.reply_to(message, welcome_text, parse_mode="HTML")
+    bot.reply_to(message, welcome_text)
 
 # Video to MP3 Handler
 @bot.message_handler(content_types=['video', 'document'])
 def handle_video(message):
     user_id = message.from_user.id
-    user_name = clean_html(message.from_user.first_name)
+    user_name = message.from_user.first_name
     
     video_input_path = f"input_{user_id}.mp4"
     audio_output_path = f"output_{user_id}.mp3"
@@ -72,16 +70,14 @@ def handle_video(message):
 
         status_msg = bot.reply_to(
             message, 
-            "⏳ <b>কাজ শুরু হচ্ছে...</b>\n<code>[▱▱▱▱▱▱▱▱▱▱] 0%</code>", 
-            parse_mode="HTML"
+            f"⏳ কাজ শুরু হচ্ছে...\n[▱▱▱▱▱▱▱▱▱▱] 0%{FOOTER}"
         )
         time.sleep(0.5)
 
         bot.edit_message_text(
-            "📥 <b>ভিডিও ডাউনলোড হচ্ছে...</b>\n<code>[▰▰▰▱▱▱▱▱▱▱] 30%</code>", 
+            f"📥 ভিডিও ডাউনলোড হচ্ছে...\n[▰▰▰▱▱▱▱▱▱▱] 30%{FOOTER}", 
             chat_id=message.chat.id, 
-            message_id=status_msg.message_id,
-            parse_mode="HTML"
+            message_id=status_msg.message_id
         )
 
         file_info = bot.get_file(file_id)
@@ -91,10 +87,9 @@ def handle_video(message):
             new_file.write(downloaded_file)
 
         bot.edit_message_text(
-            "⚙️ <b>MP3 এ কনভার্ট করা হচ্ছে...</b>\n<code>[▰▰▰▰▰▰▱▱▱▱] 65%</code>", 
+            f"⚙️ MP3 এ কনভার্ট করা হচ্ছে...\n[▰▰▰▰▰▰▱▱▱▱] 65%{FOOTER}", 
             chat_id=message.chat.id, 
-            message_id=status_msg.message_id,
-            parse_mode="HTML"
+            message_id=status_msg.message_id
         )
 
         # FFmpeg দিয়ে অডিও এক্সট্র্যাক্ট
@@ -102,42 +97,39 @@ def handle_video(message):
         subprocess.run(cmd, shell=True, check=True)
 
         bot.edit_message_text(
-            "📤 <b>অডিও ফাইল পাঠানো হচ্ছে...</b>\n<code>[▰▰▰▰▰▰▰▰▰▰] 100%</code>", 
+            f"📤 অডিও ফাইল পাঠানো হচ্ছে...\n[▰▰▰▰▰▰▰▰▰▰] 100%{FOOTER}", 
             chat_id=message.chat.id, 
-            message_id=status_msg.message_id,
-            parse_mode="HTML"
+            message_id=status_msg.message_id
         )
         time.sleep(0.5)
 
-        bot_username = clean_html(bot.get_me().username)
+        bot_username = bot.get_me().username
         caption_text = (
-            f"🎧 <b>আপনার MP3 ফাইল রেডি!</b>\n\n"
-            f"👤 <b>ইউজার:</b> {user_name}\n"
-            f"⚡ <b>কনভার্টেড বাই:</b> @{bot_username}"
+            f"🎧 আপনার MP3 ফাইল রেডি!\n\n"
+            f"👤 ইউজার: {user_name}\n"
+            f"⚡ কনভার্টেড বাই: @{bot_username}"
+            f"{FOOTER}"
         )
 
         with open(audio_output_path, 'rb') as audio:
             bot.send_audio(
                 chat_id=message.chat.id, 
                 audio=audio, 
-                caption=caption_text,
-                parse_mode="HTML"
+                caption=caption_text
             )
 
         if status_msg:
             bot.delete_message(message.chat.id, status_msg.message_id)
 
     except Exception as e:
-        error_msg = clean_html(str(e))
         if status_msg:
             bot.edit_message_text(
-                f"❌ <b>একটি সমস্যা হয়েছে!</b>\n<code>{error_msg}</code>",
+                f"❌ একটি সমস্যা হয়েছে!\n{str(e)}{FOOTER}",
                 chat_id=message.chat.id,
-                message_id=status_msg.message_id,
-                parse_mode="HTML"
+                message_id=status_msg.message_id
             )
         else:
-            bot.reply_to(message, f"❌ <b>একটি সমস্যা হয়েছে!</b>\n<code>{error_msg}</code>", parse_mode="HTML")
+            bot.reply_to(message, f"❌ একটি সমস্যা হয়েছে!\n{str(e)}{FOOTER}")
 
     finally:
         if os.path.exists(video_input_path):
